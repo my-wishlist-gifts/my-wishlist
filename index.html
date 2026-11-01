@@ -1,4 +1,584 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Wishlist ♡</title><style>:root{--navy:#101e32;--cream:#f7f2e9;--gold:#d9bf91}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--navy);font:16px system-ui,Arial}header{background:var(--navy);color:var(--cream);padding:22px max(20px,calc((100vw - 1100px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}h1,h2,.brand{font-family:Georgia,serif;font-weight:400}.brand{font-size:29px;color:var(--gold)}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:24px;padding:11px 19px;background:var(--navy);color:white}button.alt{background:#e9e0d2;color:var(--navy)}button:disabled{opacity:.5;cursor:not-allowed}.hero{text-align:center;background:linear-gradient(135deg,#142942,#0b1523);color:var(--cream);padding:55px 15px 65px}.hero h1{font-size:clamp(38px,6vw,65px);margin:0;color:var(--gold)}.hero p{color:#e7dcc9}.wrap{max-width:1100px;margin:auto;padding:30px 20px}.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}.events{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 28px}.events button.active{background:var(--gold);color:var(--navy)}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:18px}.card{border-radius:18px;background:#fffaf3;overflow:hidden;box-shadow:0 4px 16px #10203518}.card img,.placeholder{width:100%;height:205px;object-fit:cover;background:#e4dacc}.placeholder{display:grid;place-items:center;font-size:64px}.body{padding:17px}.body h3{margin:0 0 6px}.body p{margin:6px 0 14px}.status{padding:9px 12px;border-radius:10px;background:#dce8d9;color:#24502d;text-align:center}.status.taken{background:#20334d;color:white}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font-size:13px;padding:9px 12px}dialog{border:0;border-radius:20px;padding:25px;width:min(460px,calc(100% - 24px));box-shadow:0 20px 90px #0005}dialog::backdrop{background:#091626b8}label{display:block;margin:14px 0 5px;font-size:14px}input,textarea,select{width:100%;padding:12px;border:1px solid #c8c2b8;border-radius:10px;background:white}textarea{resize:vertical}.muted{color:#777}.notice{background:#fff0d7;padding:14px;border-radius:10px;margin:15px 0}.hidden{display:none!important}a{color:#355f90}.foot{text-align:center;padding:30px;color:#6f6c68;font-size:13px}@media(max-width:550px){header{padding:18px}.brand{font-size:23px}}</style></head><body><header><div class="brand">🎁 My Wishlist ♡</div><button id="modeBtn" class="alt">Режим владельца</button></header><section class="hero"><h1>My Wishlist ♡</h1><p>Маленькие мечты, большие поводы для радости</p><p>Подарки можно бронировать анонимно ✨</p></section><main class="wrap"><div class="events" id="events"></div><div class="toolbar"><div><h2 id="eventTitle">Мои желания</h2><p class="muted" id="count"></p></div><div><button class="alt" id="shareBtn">Поделиться ссылкой</button> <button id="addEvent" class="hidden">+ Праздник</button> <button id="addGift" class="hidden">+ Желание</button></div></div><div class="notice" id="demoNotice">Это локальная демонстрация. Изменения сохраняются только в этом браузере. Для общей синхронизации бронирований нужен Supabase.</div><div class="grid" id="grid"></div></main><div class="foot">С любовью ♡ My Wishlist</div><dialog id="dlg"><h2 id="dialogTitle"></h2><div id="dialogBody"></div><div class="actions"><button class="alt" onclick="dlg.close()">Закрыть</button><button id="saveBtn">Сохранить</button></div></dialog><script>
-const key='wishlist_demo_v1';let state=JSON.parse(localStorage.getItem(key)||'null')||{events:[{id:'birthday',name:'День рождения',date:'14 марта'},{id:'newyear',name:'Новый год',date:'31 декабря'}],gifts:[{id:'g1',event:'birthday',name:'Красивый букет цветов',price:'50 €',image:'',url:'',note:'',taken:false},{id:'g2',event:'birthday',name:'Любимые духи',price:'120 €',image:'',url:'',note:'',taken:false}]};let selected=state.events[0]?.id,owner=false,editing=null;const $=id=>document.getElementById(id),dlg=$('dlg');const persist=()=>localStorage.setItem(key,JSON.stringify(state));const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function render(){ $('modeBtn').textContent=owner?'Выйти из режима владельца':'Режим владельца';$('addGift').classList.toggle('hidden',!owner);$('addEvent').classList.toggle('hidden',!owner);$('events').innerHTML=state.events.map(e=>`<button class="${selected===e.id?'active':''}" data-event="${esc(e.id)}">${esc(e.name)} · ${esc(e.date)}</button>`).join('');let ev=state.events.find(e=>e.id===selected);$('eventTitle').textContent=ev?.name||'Мои желания';let gifts=state.gifts.filter(g=>g.event===selected);$('count').textContent=gifts.length+' желаний';$('grid').innerHTML=gifts.map(g=>`<article class="card">${g.image?`<img src="${esc(g.image)}" alt="${esc(g.name)}" onerror="this.outerHTML='<div class=placeholder>🎁</div>'">`:'<div class="placeholder">🎁</div>'}<div class="body"><h3>${esc(g.name)}</h3><p>${esc(g.price)} ${g.url?`· <a href="${esc(g.url)}" target="_blank" rel="noopener noreferrer">Магазин ↗</a>`:''}</p>${g.note?`<p class="muted">${esc(g.note)}</p>`:''}<div class="status ${g.taken?'taken':''}">${g.taken?'🎁 Забронировано':'○ Свободно'}</div><div class="actions">${owner?`<button data-edit="${esc(g.id)}" class="alt">Изменить</button><button data-delete="${esc(g.id)}" class="alt">Удалить</button>`:!g.taken?`<button data-book="${esc(g.id)}">Забронировать</button>`:''}</div></div></article>`).join('')||'<p>Пока нет желаний. Добавь первый подарок ♡</p>';}
-$('events').onclick=e=>{let b=e.target.closest('[data-event]');if(b){selected=b.dataset.event;render()}};$('modeBtn').onclick=()=>{owner=!owner;render()};$('shareBtn').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);alert('Ссылка скопирована. В демо брони не синхронизируются между устройствами.')}catch{prompt('Скопируй ссылку',location.href)}};function show(title,html,fn){$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;$('saveBtn').onclick=fn;dlg.showModal()};$('addEvent').onclick=()=>show('Новый праздник','<label>Название</label><input id="en" placeholder="Например, 8 Марта"><label>Дата</label><input id="ed" placeholder="8 марта">',()=>{let name=$('en').value.trim();if(!name)return alert('Введи название');let id=crypto.randomUUID();state.events.push({id,name,date:$('ed').value.trim()});selected=id;persist();dlg.close();render()});function giftForm(g={}){show(g.id?'Изменить желание':'Новое желание',`<label>Название</label><input id="gn" value="${esc(g.name)}" placeholder="Что хочется получить?"><label>Цена</label><input id="gp" value="${esc(g.price)}" placeholder="Например, 50 €"><label>Ссылка на фото (https://)</label><input id="gi" value="${esc(g.image)}"><label>Ссылка на магазин (https://)</label><input id="gu" value="${esc(g.url)}"><label>Комментарий</label><textarea id="gt">${esc(g.note)}</textarea>`,()=>{let name=$('gn').value.trim();if(!name)return alert('Укажи название');let data={name,price:$('gp').value.trim(),image:$('gi').value.trim(),url:$('gu').value.trim(),note:$('gt').value.trim()};if(g.id)Object.assign(state.gifts.find(x=>x.id===g.id),data);else state.gifts.push({id:crypto.randomUUID(),event:selected,taken:false,...data});persist();dlg.close();render()})};$('addGift').onclick=()=>giftForm();$('grid').onclick=e=>{let b=e.target.closest('button');if(!b)return;let g=state.gifts.find(x=>x.id===(b.dataset.edit||b.dataset.delete||b.dataset.book));if(!g)return;if(b.dataset.edit)giftForm(g);if(b.dataset.delete&&confirm('Удалить желание?')){state.gifts=state.gifts.filter(x=>x.id!==g.id);persist();render()}if(b.dataset.book){show('Тайная бронь 🎁',`<p>Забронировать «${esc(g.name)}»?</p><p class="muted">Владелец увидит только статус брони, но не твоё имя.</p>`,()=>{g.taken=true;persist();dlg.close();render();alert('Подарок забронирован в этой демонстрации!')})}};render();
-</script></body></html>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Wishlist ♡</title>
+<style>
+:root {
+  --navy:#14243b;
+  --cream:#f8f4ec;
+  --gold:#d6bd91;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--cream);
+  color:var(--navy);
+}
+header {
+  background:var(--navy);
+  color:var(--gold);
+  padding:22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.logo { font:26px Georgia,serif; }
+.hero {
+  background:linear-gradient(120deg,#233d5e,#101b2b);
+  text-align:center;
+  color:var(--cream);
+  padding:65px 20px;
+}
+h1 {
+  color:var(--gold);
+  font:clamp(38px,6vw,65px) Georgia,serif;
+  margin:0;
+}
+.hero p { line-height:1.7; }
+main {
+  max-width:1100px;
+  margin:auto;
+  padding:35px 20px;
+}
+button {
+  background:var(--navy);
+  color:white;
+  border:0;
+  border-radius:25px;
+  padding:12px 20px;
+  cursor:pointer;
+}
+button:disabled { opacity:.5; }
+.secondary {
+  background:#e9dfcf;
+  color:var(--navy);
+}
+.toolbar,.events,.actions {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.toolbar {
+  justify-content:space-between;
+  margin:25px 0;
+}
+.events button.active {
+  background:var(--gold);
+  color:var(--navy);
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:22px;
+}
+.card {
+  background:#fffcf7;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 5px 20px #14243b16;
+}
+.card img,.placeholder {
+  width:100%;
+  height:210px;
+  object-fit:cover;
+}
+.placeholder {
+  display:grid;
+  place-items:center;
+  background:#e9dfcf;
+  font-size:55px;
+}
+.content { padding:20px; }
+.content h3 { margin-top:0; }
+.status {
+  background:#dce9dc;
+  padding:10px;
+  border-radius:10px;
+  margin:15px 0;
+}
+.status.taken {
+  background:#263b56;
+  color:white;
+}
+.actions button {
+  font-size:13px;
+  padding:9px 12px;
+}
+.hidden { display:none !important; }
+.notice {
+  background:#fff0d7;
+  padding:14px;
+  border-radius:10px;
+  margin:20px 0;
+}
+dialog {
+  width:min(480px,95vw);
+  border:0;
+  border-radius:20px;
+  padding:25px;
+}
+dialog::backdrop { background:#07182bb0; }
+label {
+  display:block;
+  margin-top:14px;
+}
+input,textarea {
+  width:100%;
+  padding:12px;
+  margin-top:5px;
+  border:1px solid #c7bcad;
+  border-radius:9px;
+  font:inherit;
+}
+textarea { min-height:80px; }
+a { color:#42658c; }
+footer {
+  text-align:center;
+  padding:35px;
+  color:#777;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎁 My Wishlist ♡</div>
+  <button class="secondary" id="loginBtn">
+    Вход владельца
+  </button>
+</header>
+
+<section class="hero">
+  <h1>My Wishlist ♡</h1>
+  <p>Маленькие мечты, большие поводы для радости</p>
+  <p>Подарки можно бронировать анонимно ✨</p>
+</section>
+
+<main>
+  <div class="events" id="events"></div>
+
+  <div class="toolbar">
+    <div>
+      <h2 id="eventTitle">Мои желания</h2>
+      <span id="count"></span>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="share">
+        Поделиться
+      </button>
+      <button class="hidden" id="addEvent">
+        + Праздник
+      </button>
+      <button class="hidden" id="addGift">
+        + Желание
+      </button>
+    </div>
+  </div>
+
+  <div id="notice" class="notice hidden"></div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<footer>С любовью ♡ My Wishlist</footer>
+
+<dialog id="dialog">
+  <h2 id="dialogTitle"></h2>
+  <div id="dialogBody"></div>
+  <div class="actions" style="margin-top:20px">
+    <button class="secondary" id="closeDialog">
+      Закрыть
+    </button>
+    <button id="saveDialog">Сохранить</button>
+  </div>
+</dialog>
+
+<script type="module">
+import {createClient} from
+'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const supabase=createClient(
+  'https://jbhxqbhjjtnduikvyvdj.supabase.co',
+  'sb_publishable_yFAEmWU9KttyxjYD6XrACw_uVe31m-j'
+);
+
+const $=id=>document.getElementById(id);
+
+const escapeHTML=value=>String(value??'')
+  .replace(/[&<>"']/g,c=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[c]));
+
+let events=[];
+let gifts=[];
+let reserved=new Set();
+let selected=null;
+let owner=false;
+
+const dialog=$('dialog');
+
+$('closeDialog').onclick=()=>dialog.close();
+
+function notice(message) {
+  $('notice').textContent=message;
+  $('notice').classList.remove('hidden');
+}
+
+function showDialog(title,html,callback) {
+  $('dialogTitle').textContent=title;
+  $('dialogBody').innerHTML=html;
+  $('saveDialog').onclick=callback;
+  dialog.showModal();
+}
+
+function check(result) {
+  if(result.error) throw result.error;
+  return result.data;
+}
+
+async function load() {
+  try {
+    events=check(await supabase
+      .from('wishlist_events')
+      .select('*')
+      .order('created_at'));
+
+    gifts=check(await supabase
+      .from('wishlist_gifts')
+      .select('*')
+      .order('created_at'));
+
+    const statuses=check(await supabase
+      .rpc('wishlist_reservation_status'));
+
+    reserved=new Set(statuses.map(x=>x.gift_id));
+
+    if(!events.some(e=>e.id===selected)) {
+      selected=events[0]?.id??null;
+    }
+
+    render();
+  } catch(error) {
+    notice('Ошибка загрузки: '+error.message);
+  }
+}
+
+function render() {
+  $('loginBtn').textContent=owner
+    ? 'Выйти'
+    : 'Вход владельца';
+
+  $('addEvent').classList.toggle('hidden',!owner);
+  $('addGift').classList.toggle(
+    'hidden',!owner||!selected
+  );
+
+  $('events').innerHTML=events.map(e=>`
+    <button data-event="${e.id}"
+      class="${selected===e.id?'active':''}">
+      ${escapeHTML(e.title)}
+    </button>
+  `).join('');
+
+  $('eventTitle').textContent=
+    events.find(e=>e.id===selected)?.title
+    ||'Мои желания';
+
+  const items=gifts.filter(g=>g.event_id===selected);
+
+  $('count').textContent=items.length+' желаний';
+
+  $('grid').innerHTML=items.map(g=>{
+    const taken=reserved.has(g.id);
+    const token=localStorage.getItem(
+      'wishlist_token_'+g.id
+    );
+
+    return `
+      <article class="card">
+        ${g.image_url
+          ? `<img src="${escapeHTML(g.image_url)}"
+                 alt="${escapeHTML(g.title)}">`
+          : '<div class="placeholder">🎁</div>'}
+
+        <div class="content">
+          <h3>${escapeHTML(g.title)}</h3>
+          <p>${g.price==null?'':escapeHTML(g.price)+' €'}</p>
+          <p>${escapeHTML(g.description)}</p>
+
+          ${g.product_url?`
+            <p><a href="${escapeHTML(g.product_url)}"
+              target="_blank" rel="noopener noreferrer">
+              Посмотреть в магазине ↗
+            </a></p>`:''}
+
+          <div class="status ${taken?'taken':''}">
+            ${taken?'🎁 Забронировано':'♡ Свободно'}
+          </div>
+
+          <div class="actions">
+            ${owner?`
+              <button data-edit="${g.id}">Изменить</button>
+              <button data-delete="${g.id}">Удалить</button>
+            `:!taken?`
+              <button data-book="${g.id}">Забронировать</button>
+            `:''}
+
+            ${!owner&&taken&&token?`
+              <button class="secondary" data-cancel="${g.id}">
+                Отменить мою бронь
+              </button>
+            `:''}
+          </div>
+        </div>
+      </article>`;
+  }).join('')||'<p>Пока здесь нет желаний ♡</p>';
+}
+
+function validURL(value) {
+  if(!value) return null;
+  const url=new URL(value);
+  if(!['http:','https:'].includes(url.protocol)) {
+    throw Error('Нужна ссылка https://');
+  }
+  return url.href;
+}
+
+$('events').onclick=event=>{
+  const button=event.target.closest('[data-event]');
+  if(!button) return;
+  selected=button.dataset.event;
+  render();
+};
+
+$('share').onclick=async()=>{
+  try {
+    await navigator.clipboard.writeText(location.href);
+    alert('Ссылка скопирована ♡');
+  } catch {
+    prompt('Скопируй ссылку:',location.href);
+  }
+};
+
+async function refreshOwner() {
+  const {data:{user}}=await supabase.auth.getUser();
+
+  // Этот UID должен совпадать с владельцем,
+  // указанным в правилах доступа Supabase.
+  const OWNER_ID='49d8d725-76cc-47c4-9c25-04e1f999ce0f';
+
+  owner=!!user&&user.id===OWNER_ID;
+  render();
+}
+
+$('loginBtn').onclick=async()=>{
+  if(owner) {
+    await supabase.auth.signOut();
+    owner=false;
+    render();
+    return;
+  }
+
+  showDialog('Вход владельца',`
+    <label>Email</label>
+    <input id="email" type="email">
+    <label>Пароль</label>
+    <input id="password" type="password">
+  `,async()=>{
+    try {
+      check(await supabase.auth.signInWithPassword({
+        email:$('email').value.trim(),
+        password:$('password').value
+      }));
+      dialog.close();
+      await refreshOwner();
+    } catch(error) {
+      alert(error.message);
+    }
+  });
+};
+
+$('addEvent').onclick=()=>{
+  showDialog('Новый праздник',`
+    <label>Название</label>
+    <input id="eventName" placeholder="День рождения">
+    <label>Дата</label>
+    <input id="eventDate" type="date">
+  `,async()=>{
+    try {
+      const title=$('eventName').value.trim();
+      if(!title) throw Error('Укажи название');
+
+      const result=check(await supabase
+        .from('wishlist_events')
+        .insert({
+          title,
+          event_date:$('eventDate').value||null
+        })
+        .select()
+        .single());
+
+      selected=result.id;
+      dialog.close();
+      await load();
+    } catch(error) {
+      alert(error.message);
+    }
+  });
+};
+
+function giftForm(gift) {
+  showDialog(gift?'Изменить желание':'Новое желание',`
+    <label>Название</label>
+    <input id="giftName" value="${escapeHTML(gift?.title)}">
+
+    <label>Цена, €</label>
+    <input id="giftPrice" type="number" min="0"
+      value="${escapeHTML(gift?.price)}">
+
+    <label>Ссылка на фотографию</label>
+    <input id="giftImage"
+      value="${escapeHTML(gift?.image_url)}">
+
+    <label>Ссылка на магазин</label>
+    <input id="giftURL"
+      value="${escapeHTML(gift?.product_url)}">
+
+    <label>Комментарий</label>
+    <textarea id="giftDescription">${escapeHTML(
+      gift?.description
+    )}</textarea>
+  `,async()=>{
+    try {
+      const title=$('giftName').value.trim();
+      if(!title) throw Error('Укажи название');
+
+      const data={
+        title,
+        price:$('giftPrice').value===''
+          ?null:Number($('giftPrice').value),
+        image_url:validURL($('giftImage').value.trim()),
+        product_url:validURL($('giftURL').value.trim()),
+        description:$('giftDescription').value.trim()
+      };
+
+      if(gift) {
+        check(await supabase.from('wishlist_gifts')
+          .update(data).eq('id',gift.id));
+      } else {
+        check(await supabase.from('wishlist_gifts')
+          .insert({...data,event_id:selected}));
+      }
+
+      dialog.close();
+      await load();
+    } catch(error) {
+      alert(error.message);
+    }
+  });
+}
+
+$('addGift').onclick=()=>giftForm(null);
+
+$('grid').onclick=async event=>{
+  const button=event.target.closest('button');
+  if(!button) return;
+
+  const id=button.dataset.edit
+    ||button.dataset.delete
+    ||button.dataset.book
+    ||button.dataset.cancel;
+
+  const gift=gifts.find(g=>g.id===id);
+  if(!gift) return;
+
+  if(button.dataset.edit) {
+    giftForm(gift);
+    return;
+  }
+
+  if(button.dataset.delete) {
+    if(!confirm('Удалить желание?')) return;
+    try {
+      check(await supabase.from('wishlist_gifts')
+        .delete().eq('id',id));
+      await load();
+    } catch(error) {
+      alert(error.message);
+    }
+    return;
+  }
+
+  if(button.dataset.book) {
+    showDialog('Тайная бронь 🎁',`
+      <p>Забронировать «${escapeHTML(gift.title)}»?</p>
+      <p>Твоё имя никто не увидит.</p>
+    `,async()=>{
+      try {
+        const bytes=crypto.getRandomValues(
+          new Uint8Array(32)
+        );
+        const token=Array.from(bytes,x=>
+          x.toString(16).padStart(2,'0')
+        ).join('');
+
+        const success=check(await supabase.rpc(
+          'wishlist_book',
+          {p_gift_id:id,p_token:token}
+        ));
+
+        if(!success) {
+          throw Error('Подарок уже забронирован');
+        }
+
+        localStorage.setItem(
+          'wishlist_token_'+id,token
+        );
+        dialog.close();
+        await load();
+        alert('Подарок забронирован ♡');
+      } catch(error) {
+        alert(error.message);
+      }
+    });
+    return;
+  }
+
+  if(button.dataset.cancel) {
+    if(!confirm('Отменить свою бронь?')) return;
+    try {
+      const token=localStorage.getItem(
+        'wishlist_token_'+id
+      );
+
+      const success=check(await supabase.rpc(
+        'wishlist_cancel',
+        {p_gift_id:id,p_token:token}
+      ));
+
+      if(!success) throw Error('Бронь не найдена');
+
+      localStorage.removeItem(
+        'wishlist_token_'+id
+      );
+      await load();
+    } catch(error) {
+      alert(error.message);
+    }
+  }
+};
+
+await refreshOwner();
+await load();
+</script>
+</body>
+</html>
