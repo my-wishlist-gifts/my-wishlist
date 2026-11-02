@@ -457,7 +457,7 @@ function render() {
 
         <div class="content">
           <h3>${escapeHTML(g.title)}</h3>
-          <p>${g.price==null?'':escapeHTML(g.price)+' €'}</p>
+          <p>${g.price==null?'':escapeHTML(g.price)+' Р'}</p>
           <p>${escapeHTML(g.description)}</p>
 
           ${g.product_url?`
@@ -584,7 +584,7 @@ function giftForm(gift) {
     <label>Название</label>
     <input id="giftName" value="${escapeHTML(gift?.title)}">
 
-    <label>Цена, €</label>
+    <label>Цена, Р</label>
     <input id="giftPrice" type="number" min="0"
       value="${escapeHTML(gift?.price)}">
 
