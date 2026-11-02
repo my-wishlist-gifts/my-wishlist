@@ -1,37 +1,43 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>My Wishlist ♡</title>
-<style>/* MY WISHLIST — ELEGANT PREMIUM */
 
+<style>
 :root {
   --navy: #101e32;
   --cream: #f7f2e9;
   --gold: #d9bf91;
+  --text: #18283d;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  background: #f7f2e9;
-  color: #18283d;
+  margin: 0;
+  background: var(--cream);
+  color: var(--text);
   font-family: "Helvetica Neue", Arial, sans-serif;
   letter-spacing: .01em;
 }
 
 header {
-  background: #101e32;
+  background: var(--navy);
   border-bottom: 1px solid rgba(217,191,145,.35);
   padding: 22px clamp(20px,5vw,75px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
 }
 
 .logo {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(23px,3vw,32px);
+  font: clamp(23px,3vw,32px) Georgia,serif;
   letter-spacing: .045em;
   color: #e9d2a8;
 }
@@ -39,73 +45,62 @@ header {
 .hero {
   position: relative;
   overflow: hidden;
+  text-align: center;
+  color: var(--cream);
   background:
-    radial-gradient(
-      circle at 85% 15%,
-      rgba(217,191,145,.17),
-      transparent 35%
-    ),
+    radial-gradient(circle at 85% 15%,
+      rgba(217,191,145,.17),transparent 35%),
     linear-gradient(135deg,#172b46,#0d192a);
-  padding: 105px 24px 115px;
+  padding: 100px 24px 110px;
 }
 
-.hero::before,
-.hero::after {
+.hero::before,.hero::after {
   content: "✧";
   position: absolute;
   color: rgba(217,191,145,.3);
-  font-size: 110px;
-  font-family: Georgia,serif;
+  font: 100px Georgia,serif;
+  pointer-events: none;
 }
 
-.hero::before {
-  left: 8%;
-  top: 12%;
-}
+.hero::before { left: 8%; top: 10%; }
+.hero::after { right: 8%; bottom: 5%; font-size: 75px; }
 
-.hero::after {
-  right: 8%;
-  bottom: 5%;
-  font-size: 75px;
-}
-
-.hero h1,
-h1 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: normal;
-  letter-spacing: .035em;
+.hero h1 {
+  font: normal clamp(42px,7vw,76px) Georgia,serif;
   color: #e8cda0;
+  letter-spacing: .035em;
+  margin: 0 0 22px;
   text-shadow: 0 8px 30px rgba(0,0,0,.15);
 }
 
 .hero p {
   color: #eee5d8;
   font-size: 16px;
-  letter-spacing: .055em;
+  line-height: 1.7;
+  letter-spacing: .04em;
 }
 
 main {
   max-width: 1200px;
+  margin: auto;
   padding: 50px 24px 85px;
 }
 
 h2 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: normal;
-  font-size: clamp(28px,4vw,39px);
+  font: normal clamp(28px,4vw,39px) Georgia,serif;
+  margin: 0 0 12px;
 }
 
 button {
   background: #152842;
+  color: white;
   border: 1px solid #152842;
   border-radius: 8px;
   padding: 12px 20px;
-  font-weight: 500;
+  font: 500 14px "Helvetica Neue",Arial,sans-serif;
   letter-spacing: .025em;
-  transition:
-    transform .2s ease,
-    background .2s ease,
-    box-shadow .2s ease;
+  cursor: pointer;
+  transition: transform .2s,background .2s,box-shadow .2s;
 }
 
 button:hover:not(:disabled) {
@@ -114,8 +109,9 @@ button:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 
-button:focus-visible,
-a:focus-visible {
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+button:focus-visible,a:focus-visible {
   outline: 3px solid #c4a36d;
   outline-offset: 3px;
 }
@@ -131,14 +127,16 @@ header .secondary {
   border-color: rgba(234,212,172,.65);
 }
 
-header .secondary:hover {
-  color: #fff;
+header .secondary:hover { color: white; }
+
+.events,.toolbar,.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.events {
-  gap: 10px;
-  margin-bottom: 25px;
-}
+.events { margin-bottom: 30px; }
 
 .events button {
   background: transparent;
@@ -154,25 +152,25 @@ header .secondary:hover {
 }
 
 .toolbar {
+  justify-content: space-between;
   border-bottom: 1px solid #ded3c3;
   padding-bottom: 24px;
   margin-bottom: 30px;
 }
 
 .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(255px,1fr));
   gap: 26px;
-  grid-template-columns:
-    repeat(auto-fill,minmax(255px,1fr));
 }
 
 .card {
+  overflow: hidden;
   background: #fffdfa;
   border: 1px solid #eee4d7;
   border-radius: 14px;
   box-shadow: 0 8px 32px rgba(22,36,54,.07);
-  transition:
-    transform .25s ease,
-    box-shadow .25s ease;
+  transition: transform .25s,box-shadow .25s;
 }
 
 .card:hover {
@@ -180,31 +178,31 @@ header .secondary:hover {
   box-shadow: 0 16px 40px rgba(22,36,54,.13);
 }
 
-.card img,
-.placeholder {
+.card img,.placeholder {
+  display: block;
+  width: 100%;
   height: 255px;
   object-fit: cover;
   background: #eae1d4;
 }
 
 .placeholder {
+  display: grid;
+  place-items: center;
   color: #b39b75;
+  font-size: 55px;
 }
 
-.content {
-  padding: 23px;
-}
+.content { padding: 23px; }
 
 .content h3 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 24px;
-  font-weight: normal;
-  line-height: 1.25;
+  font: normal 24px/1.25 Georgia,serif;
+  margin: 0 0 14px;
 }
 
 .content p {
-  line-height: 1.6;
   color: #647080;
+  line-height: 1.6;
 }
 
 .content a {
@@ -213,12 +211,12 @@ header .secondary:hover {
 }
 
 .status {
-  border-radius: 6px;
-  padding: 12px;
   background: #edf2e9;
   color: #426344;
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 6px;
   font-size: 13px;
-  letter-spacing: .035em;
 }
 
 .status.taken {
@@ -226,28 +224,54 @@ header .secondary:hover {
   color: #e8d3b1;
 }
 
+.actions button {
+  font-size: 13px;
+  padding: 9px 12px;
+}
+
+.hidden { display: none !important; }
+
+.notice {
+  background: #fff0d7;
+  padding: 14px;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
 dialog {
+  width: min(480px,95vw);
+  max-height: 90vh;
+  overflow: auto;
   background: #fffdfa;
   color: #152842;
   border: 1px solid #e3d4be;
   border-radius: 15px;
+  padding: 25px;
   box-shadow: 0 25px 80px rgba(0,0,0,.2);
 }
 
-dialog h2 {
-  margin-top: 0;
-  color: #152842;
+dialog::backdrop { background: #07182bb0; }
+
+dialog h2 { color: #152842; }
+
+label {
+  display: block;
+  margin-top: 14px;
 }
 
-input,
-textarea {
-  background: #fff;
+input,textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  background: white;
   border: 1px solid #d9cbb7;
   border-radius: 7px;
+  font: inherit;
 }
 
-input:focus,
-textarea:focus {
+textarea { min-height: 80px; }
+
+input:focus,textarea:focus {
   outline: 2px solid #cbb084;
   border-color: #cbb084;
 }
@@ -255,192 +279,31 @@ textarea:focus {
 footer {
   background: #101e32;
   color: #d9bf91;
-  font-family: Georgia,serif;
-  letter-spacing: .08em;
+  text-align: center;
   padding: 42px 20px;
+  font: 16px Georgia,serif;
+  letter-spacing: .08em;
 }
 
 @media(max-width:600px) {
-  header {
-    padding: 18px;
-  }
-
-  .hero {
-    padding: 78px 20px 90px;
-  }
-
-  .hero::before,
-  .hero::after {
-    font-size: 45px;
-  }
-
-  main {
-    padding: 32px 16px 65px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .toolbar {
-    align-items: flex-start;
-  }
+  header { padding: 18px; flex-wrap: wrap; }
+  .hero { padding: 78px 20px 90px; }
+  .hero::before,.hero::after { font-size: 45px; }
+  main { padding: 32px 16px 65px; }
+  .grid { grid-template-columns: 1fr; }
+  .toolbar { align-items: flex-start; }
 }
 
 @media(prefers-reduced-motion:reduce) {
-  button,
-  .card {
-    transition: none;
-  }
-}
-</style>
-<style>
-  :root {
-  --navy:#14243b;
-  --cream:#f8f4ec;
-  --gold:#d6bd91;
-}
-* { box-sizing:border-box; }
-body {
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:var(--cream);
-  color:var(--navy);
-}
-header {
-  background:var(--navy);
-  color:var(--gold);
-  padding:22px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-.logo { font:26px Georgia,serif; }
-.hero {
-  background:linear-gradient(120deg,#233d5e,#101b2b);
-  text-align:center;
-  color:var(--cream);
-  padding:65px 20px;
-}
-h1 {
-  color:var(--gold);
-  font:clamp(38px,6vw,65px) Georgia,serif;
-  margin:0;
-}
-.hero p { line-height:1.7; }
-main {
-  max-width:1100px;
-  margin:auto;
-  padding:35px 20px;
-}
-button {
-  background:var(--navy);
-  color:white;
-  border:0;
-  border-radius:25px;
-  padding:12px 20px;
-  cursor:pointer;
-}
-button:disabled { opacity:.5; }
-.secondary {
-  background:#e9dfcf;
-  color:var(--navy);
-}
-.toolbar,.events,.actions {
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-.toolbar {
-  justify-content:space-between;
-  margin:25px 0;
-}
-.events button.active {
-  background:var(--gold);
-  color:var(--navy);
-}
-.grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-  gap:22px;
-}
-.card {
-  background:#fffcf7;
-  border-radius:18px;
-  overflow:hidden;
-  box-shadow:0 5px 20px #14243b16;
-}
-.card img,.placeholder {
-  width:100%;
-  height:210px;
-  object-fit:cover;
-}
-.placeholder {
-  display:grid;
-  place-items:center;
-  background:#e9dfcf;
-  font-size:55px;
-}
-.content { padding:20px; }
-.content h3 { margin-top:0; }
-.status {
-  background:#dce9dc;
-  padding:10px;
-  border-radius:10px;
-  margin:15px 0;
-}
-.status.taken {
-  background:#263b56;
-  color:white;
-}
-.actions button {
-  font-size:13px;
-  padding:9px 12px;
-}
-.hidden { display:none !important; }
-.notice {
-  background:#fff0d7;
-  padding:14px;
-  border-radius:10px;
-  margin:20px 0;
-}
-dialog {
-  width:min(480px,95vw);
-  border:0;
-  border-radius:20px;
-  padding:25px;
-}
-dialog::backdrop { background:#07182bb0; }
-label {
-  display:block;
-  margin-top:14px;
-}
-input,textarea {
-  width:100%;
-  padding:12px;
-  margin-top:5px;
-  border:1px solid #c7bcad;
-  border-radius:9px;
-  font:inherit;
-}
-textarea { min-height:80px; }
-a { color:#42658c; }
-footer {
-  text-align:center;
-  padding:35px;
-  color:#777;
+  button,.card { transition: none; }
 }
 </style>
 </head>
-<body>
 
+<body>
 <header>
   <div class="logo">🎁 My Wishlist ♡</div>
-  <button class="secondary" id="loginBtn">
-    Вход владельца
-  </button>
+  <button class="secondary" id="loginBtn">Вход владельца</button>
 </header>
 
 <section class="hero">
@@ -458,15 +321,9 @@ footer {
       <span id="count"></span>
     </div>
     <div class="actions">
-      <button class="secondary" id="share">
-        Поделиться
-      </button>
-      <button class="hidden" id="addEvent">
-        + Праздник
-      </button>
-      <button class="hidden" id="addGift">
-        + Желание
-      </button>
+      <button class="secondary" id="share">Поделиться</button>
+      <button class="hidden" id="addEvent">+ Праздник</button>
+      <button class="hidden" id="addGift">+ Желание</button>
     </div>
   </div>
 
@@ -480,9 +337,7 @@ footer {
   <h2 id="dialogTitle"></h2>
   <div id="dialogBody"></div>
   <div class="actions" style="margin-top:20px">
-    <button class="secondary" id="closeDialog">
-      Закрыть
-    </button>
+    <button class="secondary" id="closeDialog">Закрыть</button>
     <button id="saveDialog">Сохранить</button>
   </div>
 </dialog>
@@ -555,6 +410,7 @@ async function load() {
       selected=events[0]?.id??null;
     }
 
+    $('notice').classList.add('hidden');
     render();
   } catch(error) {
     notice('Ошибка загрузки: '+error.message);
@@ -661,8 +517,6 @@ $('share').onclick=async()=>{
 async function refreshOwner() {
   const {data:{user}}=await supabase.auth.getUser();
 
-  // Этот UID должен совпадать с владельцем,
-  // указанным в правилах доступа Supabase.
   const OWNER_ID='49d8d725-76cc-47c4-9c25-04e1f999ce0f';
 
   owner=!!user&&user.id===OWNER_ID;
